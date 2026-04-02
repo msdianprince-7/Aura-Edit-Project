@@ -1,0 +1,44 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. The Creator
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+  
+  photos    Photo[]  
+}
+
+// 2. The Uploaded Media
+model Photo {
+  id          String   @id @default(uuid())
+  imageUrl    String   
+  caption     String?
+  createdAt   DateTime @default(now())
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  appliedEdit Edit?
+}
+
+// 3. The Visual Adjustments
+model Edit {
+  id          String   @id @default(uuid())
+  filterName  String   
+  overlay     String?   
+  brightness  Int      @default(100)
+  contrast    Int      @default(100)
+  
+  photoId     String   @unique
+  photo       Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+}
