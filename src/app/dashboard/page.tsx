@@ -1,6 +1,6 @@
 // src/app/dashboard/page.tsx
 import Image from 'next/image';
-// Temporary fake data until we hook up Prisma
+
 const MOCK_PHOTOS = [
   { id: 1, url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop", caption: "Neon Nights" },
   { id: 2, url: "https://images.unsplash.com/photo-1549317336-206569e8475c?q=80&w=2574&auto=format&fit=crop", caption: "Monochrome Vibe" },
