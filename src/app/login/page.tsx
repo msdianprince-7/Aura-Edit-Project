@@ -3,24 +3,24 @@ import { signIn } from "@/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getRedirectError } from "next/dist/client/components/redirect"; 
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 
 export default function LoginPage() {
-  
-const loginWithEmail = async (formData: FormData) => {
-  "use server";
-  try {
-    await signIn("credentials", formData, { redirectTo: "/dashboard" });
-  } catch (error) {
 
-    if (getRedirectError(error)) {
-      throw error;
+  const loginWithEmail = async (formData: FormData) => {
+    "use server";
+    try {
+      await signIn("credentials", formData, { redirectTo: "/dashboard" });
+    } catch (error) {
+
+      if (isRedirectError(error)) {
+        throw error;
+      }
+      console.error("Login failed");
+      return redirect("/login?error=CredentialsSignin");
     }
-    console.error("Login failed");
-    return redirect("/login?error=CredentialsSignin");
-  }
-};;
+  };
 
   const loginWithGithub = async () => {
     "use server";
@@ -33,32 +33,32 @@ const loginWithEmail = async (formData: FormData) => {
         <h1 className="text-3xl font-bold">Welcome Back</h1>
         <p className="text-zinc-400 mt-2">Log in to your AuraEdit dashboard</p>
       </div>
-      
+
       <form action={loginWithEmail} className="space-y-4">
         <div>
           <label className="text-sm font-medium text-zinc-400">Email</label>
-          <input 
-            name="email" 
-            type="email" 
+          <input
+            name="email"
+            type="email"
             placeholder="you@example.com"
-            required 
-            className="w-full bg-black border border-white/10 rounded-lg p-3 text-white mt-1 focus:outline-none focus:border-purple-500 transition-colors" 
+            required
+            className="w-full bg-black border border-white/10 rounded-lg p-3 text-white mt-1 focus:outline-none focus:border-purple-500 transition-colors"
           />
         </div>
 
         <div>
           <label className="text-sm font-medium text-zinc-400">Password</label>
-          <input 
-            name="password" 
-            type="password" 
+          <input
+            name="password"
+            type="password"
             placeholder="••••••••"
-            required 
-            className="w-full bg-black border border-white/10 rounded-lg p-3 text-white mt-1 focus:outline-none focus:border-purple-500 transition-colors" 
+            required
+            className="w-full bg-black border border-white/10 rounded-lg p-3 text-white mt-1 focus:outline-none focus:border-purple-500 transition-colors"
           />
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors"
         >
           Sign In
@@ -72,8 +72,8 @@ const loginWithEmail = async (formData: FormData) => {
       </div>
 
       <form action={loginWithGithub}>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="w-full bg-[#24292F] text-white font-bold py-3 rounded-lg hover:bg-[#24292F]/80 transition-colors flex items-center justify-center gap-2"
         >
           <svg fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
