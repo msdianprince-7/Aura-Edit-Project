@@ -1,19 +1,18 @@
 // src/app/upload/page.tsx
+import { uploadPhotoAction } from "./action";
 
 export default function UploadPage() {
   return (
     <div className="max-w-2xl mx-auto mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight mb-2">Upload Studio</h1>
         <p className="text-zinc-400">Add a new photo to your Aura gallery.</p>
       </div>
 
-      {/* The Upload Form */}
-      <form className="space-y-6 bg-zinc-900/50 p-8 rounded-2xl border border-white/5">
+      
+      <form action={uploadPhotoAction} className="space-y-6 bg-zinc-900/50 p-8 rounded-2xl border border-white/5">
         
-        {/* Image URL Field */}
         <div className="space-y-2">
           <label htmlFor="imageUrl" className="text-sm font-medium text-zinc-300">
             Image URL
@@ -28,7 +27,6 @@ export default function UploadPage() {
           />
         </div>
 
-        {/* Caption Field */}
         <div className="space-y-2">
           <label htmlFor="caption" className="text-sm font-medium text-zinc-300">
             Caption
@@ -42,7 +40,6 @@ export default function UploadPage() {
           />
         </div>
 
-        {/* Submit Button */}
         <button 
           type="submit" 
           className="w-full bg-white text-black font-semibold py-3 rounded-lg mt-4 hover:bg-gray-200 transition-colors"
@@ -51,7 +48,6 @@ export default function UploadPage() {
         </button>
 
       </form>
-      
     </div>
   );
 }
