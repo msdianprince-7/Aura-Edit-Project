@@ -11,9 +11,12 @@ export default function LoginPage() {
   const loginWithEmail = async (formData: FormData) => {
     "use server";
     try {
-      await signIn("credentials", formData, { redirectTo: "/dashboard" });
+      await signIn("credentials", {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+        redirectTo: "/dashboard",
+      });
     } catch (error) {
-
       if (isRedirectError(error)) {
         throw error;
       }
