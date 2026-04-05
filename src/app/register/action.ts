@@ -35,5 +35,5 @@ export async function registerUserAction(formData: FormData) {
   }
 
   // If successful, go to login
-  redirect("/api/auth/signin");
+  redirect("/login?registered=true");
 }
