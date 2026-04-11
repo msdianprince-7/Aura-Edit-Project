@@ -2,7 +2,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
+import { auth } from "@/auth";
 import { buildCssFilter } from "@/lib/filters";
+import LikeButton from "@/components/social/LikeButton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,6 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function ExplorePage() {
+  const session = await auth();
+  const currentUserId = session?.user?.id || null;
+
   const photos = await prisma.photo.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -18,6 +23,8 @@ export default async function ExplorePage() {
         select: { username: true },
       },
       appliedEdit: true,
+      likes: { select: { userId: true } },
+      _count: { select: { comments: true } },
     },
     take: 60,
   });
@@ -124,13 +131,17 @@ export default async function ExplorePage() {
               ? buildCssFilter({
                   brightness: edit.brightness,
                   contrast: edit.contrast,
-                  saturation: (edit as Record<string, unknown>).saturation as number ?? 100,
-                  hueRotate: (edit as Record<string, unknown>).hueRotate as number ?? 0,
-                  sepia: (edit as Record<string, unknown>).sepia as number ?? 0,
-                  grayscale: (edit as Record<string, unknown>).grayscale as number ?? 0,
-                  blur: (edit as Record<string, unknown>).blur as number ?? 0,
+                  saturation: edit.saturation,
+                  hueRotate: edit.hueRotate,
+                  sepia: edit.sepia,
+                  grayscale: edit.grayscale,
+                  blur: edit.blur,
                 })
               : "none";
+
+            const isLiked = currentUserId
+              ? photo.likes.some((l) => l.userId === currentUserId)
+              : false;
 
             return (
               <div
@@ -144,50 +155,47 @@ export default async function ExplorePage() {
                   opacity: 0,
                 }}
               >
-                <div className="relative aspect-[4/5]">
-                  <Image
-                    src={photo.imageUrl}
-                    alt={photo.caption || "Community photo"}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    style={{ filter: filterString }}
-                  />
-                  {/* Edit overlay tint */}
-                  {edit?.overlay && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{ background: edit.overlay }}
+                <Link href={`/photo/${photo.id}`}>
+                  <div className="relative aspect-[4/5]">
+                    <Image
+                      src={photo.imageUrl}
+                      alt={photo.caption || "Community photo"}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      style={{ filter: filterString }}
                     />
-                  )}
+                    {/* Edit overlay tint */}
+                    {edit?.overlay && (
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{ background: edit.overlay }}
+                      />
+                    )}
 
-                  {/* Edit badge */}
-                  {edit && (
+                    {/* Edit badge */}
+                    {edit && edit.filterName !== "None" && (
+                      <div
+                        className="absolute top-3 right-3 z-10 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                        style={{
+                          background: "rgba(13, 10, 18, 0.7)",
+                          backdropFilter: "blur(8px)",
+                          border: "1px solid var(--border-subtle)",
+                          color: "var(--accent-lavender)",
+                        }}
+                      >
+                        {edit.filterName}
+                      </div>
+                    )}
+
+                    {/* Hover overlay */}
                     <div
-                      className="absolute top-3 right-3 z-10 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-5"
                       style={{
-                        background: "rgba(13, 10, 18, 0.7)",
-                        backdropFilter: "blur(8px)",
-                        border: "1px solid var(--border-subtle)",
-                        color: "var(--accent-lavender)",
+                        background: "linear-gradient(to top, rgba(13,10,18,0.95) 0%, rgba(13,10,18,0.3) 50%, transparent 100%)",
                       }}
                     >
-                      {edit.filterName}
-                    </div>
-                  )}
-
-                  {/* Hover overlay */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-5"
-                    style={{
-                      background: "linear-gradient(to top, rgba(13,10,18,0.95) 0%, rgba(13,10,18,0.3) 50%, transparent 100%)",
-                    }}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Link
-                        href={`/${photo.user.username}`}
-                        className="flex items-center gap-2 group/user"
-                      >
+                      <div className="flex items-center gap-2 mb-2">
                         <div
                           className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
                           style={{
@@ -198,26 +206,59 @@ export default async function ExplorePage() {
                           {photo.user.username.charAt(0).toUpperCase()}
                         </div>
                         <span
-                          className="text-sm font-semibold group-hover/user:underline"
+                          className="text-sm font-semibold"
                           style={{ color: "var(--text-primary)" }}
                         >
                           @{photo.user.username}
                         </span>
-                      </Link>
+                      </div>
+                      {photo.caption && (
+                        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                          {photo.caption}
+                        </p>
+                      )}
                     </div>
-                    {photo.caption && (
-                      <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                        {photo.caption}
-                      </p>
-                    )}
-                    <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                      {new Date(photo.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
                   </div>
+                </Link>
+
+                {/* Bottom bar with like + comment count */}
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderTop: "1px solid var(--border-subtle)" }}
+                >
+                  <div className="flex items-center gap-4">
+                    {currentUserId ? (
+                      <LikeButton
+                        photoId={photo.id}
+                        initialLiked={isLiked}
+                        initialCount={photo.likes.length}
+                        size="sm"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                        <span className="text-xs font-semibold">{photo.likes.length}</span>
+                      </div>
+                    )}
+                    <Link
+                      href={`/photo/${photo.id}`}
+                      className="flex items-center gap-1.5 transition-colors"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                      <span className="text-xs font-semibold">{photo._count.comments}</span>
+                    </Link>
+                  </div>
+                  <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                    {new Date(photo.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
               </div>
             );

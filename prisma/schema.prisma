@@ -14,9 +14,14 @@ model User {
   username  String   @unique
   email     String   @unique
   password  String?
+  bio       String?
   createdAt DateTime @default(now())
   
-  photos    Photo[]  
+  photos    Photo[]
+  likes     Like[]
+  comments  Comment[]
+  followers Follow[]  @relation("following")
+  following Follow[]  @relation("followers")
 }
 
 // 2. The Uploaded Media
@@ -30,6 +35,8 @@ model Photo {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   appliedEdit Edit?
+  likes       Like[]
+  comments    Comment[]
 }
 
 // 3. The Visual Adjustments
@@ -47,4 +54,45 @@ model Edit {
   
   photoId     String   @unique
   photo       Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+}
+
+// 4. Likes
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, photoId])
+}
+
+// 5. Comments
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+}
+
+// 6. Follow relationships
+model Follow {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+
+  followerId  String
+  follower    User     @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
 }
