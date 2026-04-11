@@ -31,6 +31,15 @@ export default async function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-2">
+          {/* Explore — visible to everyone */}
+          <Link
+            href="/explore"
+            className="text-sm font-medium px-4 py-2 rounded-full transition-all duration-200 hover:opacity-100 opacity-70"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Explore
+          </Link>
+
           {isSignedIn ? (
             <>
               {/* Quick nav links */}

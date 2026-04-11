@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { deletePhotoAction } from './action';
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { buildCssFilter } from "@/lib/filters";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -15,11 +16,12 @@ export default async function Dashboard() {
 
   const userId = session.user.id;
 
-  // Fetch only the current user's photos
+  // Fetch only the current user's photos with their edits
   const [photos, user] = await Promise.all([
     prisma.photo.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      include: { appliedEdit: true },
     }),
     prisma.user.findUnique({
       where: { id: userId },
@@ -173,75 +175,131 @@ export default async function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {photos.map((photo, index) => (
-            <div
-              key={photo.id}
-              className="group relative aspect-4/5 rounded-2xl overflow-hidden"
-              style={{
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border-subtle)",
-                animation: `slide-up 0.5s ease forwards`,
-                animationDelay: `${index * 0.08}s`,
-                opacity: 0,
-              }}
-            >
-              <Image
-                src={photo.imageUrl}
-                alt={photo.caption || "Gallery image"}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+          {photos.map((photo, index) => {
+            const edit = photo.appliedEdit;
+            const filterString = edit
+              ? buildCssFilter({
+                  brightness: edit.brightness,
+                  contrast: edit.contrast,
+                  saturation: (edit as Record<string, unknown>).saturation as number ?? 100,
+                  hueRotate: (edit as Record<string, unknown>).hueRotate as number ?? 0,
+                  sepia: (edit as Record<string, unknown>).sepia as number ?? 0,
+                  grayscale: (edit as Record<string, unknown>).grayscale as number ?? 0,
+                  blur: (edit as Record<string, unknown>).blur as number ?? 0,
+                })
+              : "none";
 
-              {/* Hover overlay */}
+            return (
               <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-between p-5"
+                key={photo.id}
+                className="group relative aspect-4/5 rounded-2xl overflow-hidden"
                 style={{
-                  background: "linear-gradient(to top, rgba(13,10,18,0.95) 0%, rgba(13,10,18,0.3) 40%, transparent 100%)",
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-subtle)",
+                  animation: `slide-up 0.5s ease forwards`,
+                  animationDelay: `${index * 0.08}s`,
+                  opacity: 0,
                 }}
               >
-                {/* Delete button */}
-                <div className="flex justify-end">
-                  <form action={deletePhotoAction}>
-                    <input type="hidden" name="id" value={photo.id} />
-                    <button
-                      type="submit"
+                <Image
+                  src={photo.imageUrl}
+                  alt={photo.caption || "Gallery image"}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  style={{ filter: filterString }}
+                />
+                {/* Edit overlay tint */}
+                {edit?.overlay && (
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: edit.overlay }}
+                  />
+                )}
+
+                {/* Filter name badge */}
+                {edit && edit.filterName !== "None" && (
+                  <div
+                    className="absolute top-3 left-3 z-10 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    style={{
+                      background: "rgba(13, 10, 18, 0.7)",
+                      backdropFilter: "blur(8px)",
+                      border: "1px solid var(--border-subtle)",
+                      color: "var(--accent-lavender)",
+                    }}
+                  >
+                    {edit.filterName}
+                  </div>
+                )}
+
+                {/* Hover overlay */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-between p-5"
+                  style={{
+                    background: "linear-gradient(to top, rgba(13,10,18,0.95) 0%, rgba(13,10,18,0.3) 40%, transparent 100%)",
+                  }}
+                >
+                  {/* Action buttons */}
+                  <div className="flex justify-end gap-2">
+                    {/* Edit button */}
+                    <Link
+                      href={`/edit/${photo.id}`}
                       className="p-2.5 rounded-xl transition-all duration-200 hover:scale-110"
                       style={{
-                        background: "rgba(240, 112, 104, 0.15)",
+                        background: "rgba(184, 140, 245, 0.15)",
                         backdropFilter: "blur(8px)",
-                        border: "1px solid rgba(240, 112, 104, 0.3)",
-                        color: "var(--accent-rose)",
+                        border: "1px solid rgba(184, 140, 245, 0.3)",
+                        color: "var(--accent-lavender)",
                       }}
-                      title="Delete photo"
+                      title="Edit photo"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 6h18" />
-                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                       </svg>
-                    </button>
-                  </form>
-                </div>
+                    </Link>
+                    {/* Delete button */}
+                    <form action={deletePhotoAction}>
+                      <input type="hidden" name="id" value={photo.id} />
+                      <button
+                        type="submit"
+                        className="p-2.5 rounded-xl transition-all duration-200 hover:scale-110"
+                        style={{
+                          background: "rgba(240, 112, 104, 0.15)",
+                          backdropFilter: "blur(8px)",
+                          border: "1px solid rgba(240, 112, 104, 0.3)",
+                          color: "var(--accent-rose)",
+                        }}
+                        title="Delete photo"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 6h18" />
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
 
-                {/* Caption */}
-                <div>
-                  {photo.caption && (
-                    <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-                      {photo.caption}
+                  {/* Caption */}
+                  <div>
+                    {photo.caption && (
+                      <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                        {photo.caption}
+                      </p>
+                    )}
+                    <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                      {new Date(photo.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </p>
-                  )}
-                  <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                    {new Date(photo.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

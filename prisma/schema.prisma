@@ -39,6 +39,11 @@ model Edit {
   overlay     String?   
   brightness  Int      @default(100)
   contrast    Int      @default(100)
+  saturation  Int      @default(100)
+  hueRotate   Int      @default(0)
+  sepia       Int      @default(0)
+  grayscale   Int      @default(0)
+  blur        Int      @default(0)
   
   photoId     String   @unique
   photo       Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
