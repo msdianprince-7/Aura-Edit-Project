@@ -10,11 +10,11 @@ import { buildCssFilter } from "@/lib/filters";
 export default async function Dashboard() {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
-  const userId = session.user.id;
+  const userId = session.user.id as string;
 
   // Fetch only the current user's photos with their edits, likes, and comment counts
   const [photos, user] = await Promise.all([

@@ -397,3 +397,108 @@ body {
 .like-button:hover {
   transform: scale(1.05);
 }
+
+/* ═══════════════════════════════════════════
+   UPLOAD PAGE
+   ═══════════════════════════════════════════ */
+
+@keyframes dropzone-pulse {
+  0%, 100% {
+    border-color: rgba(184, 140, 245, 0.15);
+    box-shadow: 0 0 0 0 rgba(184, 140, 245, 0);
+  }
+  50% {
+    border-color: rgba(184, 140, 245, 0.4);
+    box-shadow: 0 0 30px rgba(184, 140, 245, 0.08);
+  }
+}
+
+@keyframes dropzone-active {
+  0%, 100% {
+    border-color: var(--accent-lavender);
+    box-shadow: 0 0 40px rgba(184, 140, 245, 0.15);
+    transform: scale(1);
+  }
+  50% {
+    border-color: var(--accent-rose);
+    box-shadow: 0 0 50px rgba(240, 112, 104, 0.2);
+    transform: scale(1.005);
+  }
+}
+
+@keyframes progress-gradient {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes upload-success {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes preview-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.upload-dropzone {
+  animation: dropzone-pulse 3s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.upload-dropzone.dragging {
+  animation: dropzone-active 1.2s ease-in-out infinite;
+  background: rgba(184, 140, 245, 0.04) !important;
+}
+
+.upload-progress-bar {
+  background: linear-gradient(
+    90deg,
+    var(--accent-rose),
+    var(--accent-amber),
+    var(--accent-lavender),
+    var(--accent-rose)
+  );
+  background-size: 200% 100%;
+  animation: progress-gradient 1.5s linear infinite;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.upload-preview {
+  animation: preview-reveal 0.6s ease forwards;
+}
+
+.upload-mode-tab {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.upload-mode-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-rose), var(--accent-lavender));
+  border-radius: 999px;
+}
+
+.upload-remove-btn {
+  transition: all 0.2s ease;
+}
+
+.upload-remove-btn:hover {
+  transform: scale(1.1);
+  background: rgba(240, 112, 104, 0.2) !important;
+}
