@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
 import NotificationBell from "./notifications/NotificationBell";
+import SearchModal from "./search/SearchModal";
 import prisma from "@/lib/prisma";
 
 export default async function Navbar() {
@@ -52,6 +53,9 @@ export default async function Navbar() {
           >
             Explore
           </Link>
+
+          {/* Search — visible to everyone */}
+          <SearchModal />
 
           {isSignedIn ? (
             <>
@@ -105,4 +109,5 @@ export default async function Navbar() {
       </div>
     </nav>
   );
-}
+}
+
