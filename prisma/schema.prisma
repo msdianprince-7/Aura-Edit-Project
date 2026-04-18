@@ -20,8 +20,10 @@ model User {
   photos    Photo[]
   likes     Like[]
   comments  Comment[]
-  followers Follow[]  @relation("following")
-  following Follow[]  @relation("followers")
+  followers         Follow[]        @relation("following")
+  following         Follow[]        @relation("followers")
+  notifications     Notification[]  @relation("notifications")
+  sentNotifications Notification[]  @relation("sentNotifications")
 }
 
 // 2. The Uploaded Media
@@ -34,9 +36,10 @@ model Photo {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  appliedEdit Edit?
-  likes       Like[]
-  comments    Comment[]
+  appliedEdit   Edit?
+  likes         Like[]
+  comments      Comment[]
+  notifications Notification[]
 }
 
 // 3. The Visual Adjustments
@@ -95,4 +98,30 @@ model Follow {
   following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
+}
+
+// 7. Notifications
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  recipientId String
+  recipient   User   @relation("notifications", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  actorId String
+  actor   User   @relation("sentNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+
+  photoId String?
+  photo   Photo?  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, read])
+  @@index([recipientId, createdAt])
 }

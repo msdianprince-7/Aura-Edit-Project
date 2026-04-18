@@ -4,6 +4,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { createNotification, deleteNotification } from "./notification";
 
 // ═══════════════════════════════════════════
 // LIKES
@@ -17,6 +18,14 @@ export async function toggleLikeAction(photoId: string) {
 
   const userId = session.user.id;
 
+  // Get the photo to find its owner
+  const photo = await prisma.photo.findUnique({
+    where: { id: photoId },
+    select: { userId: true },
+  });
+
+  if (!photo) throw new Error("Photo not found");
+
   const existingLike = await prisma.like.findUnique({
     where: {
       userId_photoId: { userId, photoId },
@@ -27,9 +36,23 @@ export async function toggleLikeAction(photoId: string) {
     await prisma.like.delete({
       where: { id: existingLike.id },
     });
+    // Remove the like notification
+    await deleteNotification({
+      type: "LIKE",
+      recipientId: photo.userId,
+      actorId: userId,
+      photoId,
+    });
   } else {
     await prisma.like.create({
       data: { userId, photoId },
+    });
+    // Send like notification to photo owner
+    await createNotification({
+      type: "LIKE",
+      recipientId: photo.userId,
+      actorId: userId,
+      photoId,
     });
   }
 
@@ -52,12 +75,28 @@ export async function addCommentAction(formData: FormData) {
 
   if (!photoId || !content) return;
 
+  // Get the photo to find its owner
+  const photo = await prisma.photo.findUnique({
+    where: { id: photoId },
+    select: { userId: true },
+  });
+
+  if (!photo) return;
+
   await prisma.comment.create({
     data: {
       content,
       userId: session.user.id,
       photoId,
     },
+  });
+
+  // Send comment notification to photo owner
+  await createNotification({
+    type: "COMMENT",
+    recipientId: photo.userId,
+    actorId: session.user.id,
+    photoId,
   });
 
   revalidatePath(`/photo/${photoId}`);
@@ -111,11 +150,24 @@ export async function toggleFollowAction(targetUserId: string) {
     await prisma.follow.delete({
       where: { id: existingFollow.id },
     });
+    // Remove the follow notification
+    await deleteNotification({
+      type: "FOLLOW",
+      recipientId: targetUserId,
+      actorId: followerId,
+    });
   } else {
     await prisma.follow.create({
       data: { followerId, followingId: targetUserId },
+    });
+    // Send follow notification
+    await createNotification({
+      type: "FOLLOW",
+      recipientId: targetUserId,
+      actorId: followerId,
     });
   }
 
   revalidatePath("/explore");
 }
+

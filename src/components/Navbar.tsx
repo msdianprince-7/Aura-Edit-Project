@@ -3,6 +3,8 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
+import NotificationBell from "./notifications/NotificationBell";
+import prisma from "@/lib/prisma";
 
 export default async function Navbar() {
   const session = await auth();
@@ -13,6 +15,17 @@ export default async function Navbar() {
     image?: string | null;
     username?: string;
   } | undefined;
+
+  // Fetch unread notification count for the badge
+  let unreadCount = 0;
+  if (session?.user?.id) {
+    unreadCount = await prisma.notification.count({
+      where: {
+        recipientId: session.user.id,
+        read: false,
+      },
+    });
+  }
 
   return (
     <nav
@@ -57,8 +70,10 @@ export default async function Navbar() {
               >
                 Upload
               </Link>
+              {/* Notification bell */}
+              <NotificationBell initialUnreadCount={unreadCount} />
               {/* User avatar dropdown */}
-              <div className="ml-2">
+              <div className="ml-1">
                 <UserMenu user={user!} />
               </div>
             </>
@@ -86,8 +101,8 @@ export default async function Navbar() {
         </div>
 
         {/* Mobile menu */}
-        <MobileMenu isSignedIn={isSignedIn} user={user} />
+        <MobileMenu isSignedIn={isSignedIn} user={user} unreadCount={unreadCount} />
       </div>
     </nav>
   );
-}
+}

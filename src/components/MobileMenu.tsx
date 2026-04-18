@@ -11,9 +11,10 @@ interface MobileMenuProps {
     email?: string | null;
     username?: string;
   };
+  unreadCount?: number;
 }
 
-export default function MobileMenu({ isSignedIn, user }: MobileMenuProps) {
+export default function MobileMenu({ isSignedIn, user, unreadCount = 0 }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
 
   const displayName = user?.name || user?.username || user?.email?.split("@")[0] || "User";
@@ -123,6 +124,28 @@ export default function MobileMenu({ isSignedIn, user }: MobileMenuProps) {
               }>
                 Dashboard
               </MobileNavLink>
+              <Link
+                href="/notifications"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  Notifications
+                </div>
+                {unreadCount > 0 && (
+                  <span
+                    className="min-w-[20px] h-[20px] flex items-center justify-center rounded-full text-[10px] font-bold px-1"
+                    style={{
+                      background: "linear-gradient(135deg, var(--accent-rose), var(--accent-coral))",
+                      color: "var(--bg-deep)",
+                    }}
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Link>
               <MobileNavLink href="/upload" onClick={() => setOpen(false)} icon={
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               }>

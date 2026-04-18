@@ -502,3 +502,75 @@ body {
   transform: scale(1.1);
   background: rgba(240, 112, 104, 0.2) !important;
 }
+
+/* ═══════════════════════════════════════════
+   NOTIFICATION SYSTEM
+   ═══════════════════════════════════════════ */
+
+@keyframes notification-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes notification-badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(240, 112, 104, 0.4);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 2px 16px rgba(240, 112, 104, 0.6);
+  }
+}
+
+@keyframes notification-dot-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(240, 112, 104, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(240, 112, 104, 0.7);
+  }
+}
+
+.notification-badge {
+  animation: notification-badge-pulse 2s ease-in-out infinite;
+}
+
+.notification-bell:hover {
+  color: var(--text-primary) !important;
+  background: var(--bg-elevated) !important;
+}
+
+.notification-item:hover {
+  background: var(--bg-elevated) !important;
+}
+
+.notification-unread-dot {
+  animation: notification-dot-glow 2s ease-in-out infinite;
+}
+
+.notification-list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-lavender) transparent;
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: var(--accent-lavender);
+  border-radius: 999px;
+  opacity: 0.5;
+}
+
