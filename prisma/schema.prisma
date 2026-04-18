@@ -24,6 +24,7 @@ model User {
   following         Follow[]        @relation("followers")
   notifications     Notification[]  @relation("notifications")
   sentNotifications Notification[]  @relation("sentNotifications")
+  collections       Collection[]
 }
 
 // 2. The Uploaded Media
@@ -36,10 +37,11 @@ model Photo {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  appliedEdit   Edit?
-  likes         Like[]
-  comments      Comment[]
-  notifications Notification[]
+  appliedEdit      Edit?
+  likes            Like[]
+  comments         Comment[]
+  notifications    Notification[]
+  collectionPhotos CollectionPhoto[]
 }
 
 // 3. The Visual Adjustments
@@ -124,4 +126,35 @@ model Notification {
 
   @@index([recipientId, read])
   @@index([recipientId, createdAt])
+}
+
+// 8. Collections / Albums
+model Collection {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  photos CollectionPhoto[]
+
+  @@index([userId])
+}
+
+model CollectionPhoto {
+  id      String   @id @default(uuid())
+  addedAt DateTime @default(now())
+
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  photoId String
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, photoId])
+  @@index([collectionId])
 }

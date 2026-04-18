@@ -29,6 +29,20 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
       _count: {
         select: { followers: true, following: true, photos: true },
       },
+      collections: {
+        where: { isPublic: true },
+        orderBy: { updatedAt: "desc" },
+        include: {
+          _count: { select: { photos: true } },
+          photos: {
+            take: 3,
+            orderBy: { addedAt: "desc" },
+            include: {
+              photo: { select: { imageUrl: true } },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -118,7 +132,75 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
         )}
       </div>
 
+      {user.collections.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-xl font-bold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
+            Collections
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {user.collections.map((col, index) => (
+              <Link
+                key={col.id}
+                href={`/collections/${col.id}`}
+                className="collection-card group rounded-2xl overflow-hidden transition-all duration-300 block"
+                style={{
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-subtle)",
+                  animation: `slide-up 0.4s ease forwards`,
+                  animationDelay: `${index * 0.06}s`,
+                  opacity: 0,
+                }}
+              >
+                {/* Cover thumbnails */}
+                <div className="relative h-32 overflow-hidden">
+                  {col.photos.length > 0 ? (
+                    <div className="flex h-full">
+                      {col.photos.slice(0, 3).map((cp, i) => (
+                        <div key={cp.id} className="flex-1 relative" style={{ borderRight: i < 2 ? "1px solid var(--bg-surface)" : "none" }}>
+                          <Image
+                            src={cp.photo.imageUrl}
+                            alt=""
+                            fill
+                            sizes="150px"
+                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        </div>
+                      ))}
+                      {/* Fill remaining slots */}
+                      {col.photos.length < 3 && [...Array(3 - col.photos.length)].map((_, i) => (
+                        <div key={`empty-${i}`} className="flex-1" style={{ background: "var(--bg-elevated)" }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center" style={{ background: "var(--bg-elevated)" }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" opacity="0.5">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                      </svg>
+                    </div>
+                  )}
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, var(--bg-surface) 0%, transparent 60%)" }} />
+                </div>
+
+                {/* Info */}
+                <div className="px-5 pb-5 -mt-3 relative z-10">
+                  <h3 className="text-sm font-bold mb-1 truncate" style={{ color: "var(--text-primary)" }}>
+                    {col.name}
+                  </h3>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    {col._count.photos} photo{col._count.photos !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Photo grid */}
+      <h2 className="text-xl font-bold tracking-tight mb-6" style={{ color: "var(--text-primary)" }}>
+        Photos
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {user.photos.map((photo) => {
           const edit = photo.appliedEdit;

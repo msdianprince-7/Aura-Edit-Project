@@ -6,6 +6,8 @@ import { deletePhotoAction } from './action';
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { buildCssFilter } from "@/lib/filters";
+import AddToCollectionModal from "@/components/collections/AddToCollectionModal";
+import { createCollectionAction } from "@/app/actions/collection";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -16,8 +18,8 @@ export default async function Dashboard() {
 
   const userId = session.user.id as string;
 
-  // Fetch only the current user's photos with their edits, likes, and comment counts
-  const [photos, user] = await Promise.all([
+  // Fetch photos, user info, and collections
+  const [photos, user, collections] = await Promise.all([
     prisma.photo.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -32,6 +34,20 @@ export default async function Dashboard() {
         username: true,
         createdAt: true,
         _count: { select: { followers: true } },
+      },
+    }),
+    prisma.collection.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        _count: { select: { photos: true } },
+        photos: {
+          take: 3,
+          orderBy: { addedAt: 'desc' },
+          include: {
+            photo: { select: { imageUrl: true } },
+          },
+        },
       },
     }),
   ]);
@@ -132,6 +148,118 @@ export default async function Dashboard() {
               View Public Profile
             </Link>
           )}
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════ */}
+      {/* COLLECTIONS SECTION */}
+      {/* ═══════════════════════════════════════ */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            <h2 className="text-lg font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+              Collections
+            </h2>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
+              {collections.length}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Create new collection card */}
+          <form
+            action={createCollectionAction}
+            className="collection-create-card group rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[160px] cursor-pointer transition-all duration-300"
+            style={{
+              background: "var(--bg-surface)",
+              border: "2px dashed var(--border-subtle)",
+            }}
+          >
+            <input type="hidden" name="name" value="" />
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-110"
+              style={{
+                background: "linear-gradient(135deg, rgba(184, 140, 245, 0.1), rgba(240, 196, 100, 0.1))",
+                border: "1px solid var(--border-subtle)",
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-lavender)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium mb-1" style={{ color: "var(--text-primary)" }}>New Collection</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>Organize your photos</p>
+          </form>
+
+          {/* Existing collections */}
+          {collections.map((col, index) => (
+            <Link
+              key={col.id}
+              href={`/collections/${col.id}`}
+              className="collection-card group rounded-2xl overflow-hidden transition-all duration-300"
+              style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-subtle)",
+                animation: `slide-up 0.4s ease forwards`,
+                animationDelay: `${index * 0.06}s`,
+                opacity: 0,
+              }}
+            >
+              {/* Cover thumbnails */}
+              <div className="relative h-28 overflow-hidden">
+                {col.photos.length > 0 ? (
+                  <div className="flex h-full">
+                    {col.photos.slice(0, 3).map((cp, i) => (
+                      <div key={cp.id} className="flex-1 relative" style={{ borderRight: i < 2 ? "1px solid var(--bg-surface)" : "none" }}>
+                        <Image
+                          src={cp.photo.imageUrl}
+                          alt=""
+                          fill
+                          sizes="150px"
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                    ))}
+                    {/* Fill remaining slots */}
+                    {col.photos.length < 3 && [...Array(3 - col.photos.length)].map((_, i) => (
+                      <div key={`empty-${i}`} className="flex-1" style={{ background: "var(--bg-elevated)" }} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center" style={{ background: "var(--bg-elevated)" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" opacity="0.5">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
+                )}
+                {/* Gradient overlay */}
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, var(--bg-surface) 0%, transparent 60%)" }} />
+              </div>
+
+              {/* Info */}
+              <div className="px-4 pb-4 -mt-2 relative z-10">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <h3 className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
+                    {col.name}
+                  </h3>
+                  {!col.isPublic && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  )}
+                </div>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {col._count.photos} photo{col._count.photos !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -247,7 +375,36 @@ export default async function Dashboard() {
                   }}
                 >
                   {/* Action buttons */}
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-2 relative z-20">
+                    <AddToCollectionModal
+                      photoId={photo.id}
+                      trigger={
+                        <button
+                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                          style={{
+                            background: "rgba(13, 10, 18, 0.6)",
+                            backdropFilter: "blur(4px)",
+                            border: "1px solid var(--border-subtle)",
+                            color: "var(--text-primary)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "var(--bg-elevated)";
+                            e.currentTarget.style.color = "var(--accent-lavender)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "rgba(13, 10, 18, 0.6)";
+                            e.currentTarget.style.color = "var(--text-primary)";
+                          }}
+                          title="Add to Collection"
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                        </button>
+                      }
+                    />
                     {/* Edit button */}
                     <Link
                       href={`/edit/${photo.id}`}
