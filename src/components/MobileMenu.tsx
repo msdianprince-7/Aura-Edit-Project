@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOutAction } from "@/app/actions/auth";
+import ThemeToggle from "./ThemeToggle";
 
 interface MobileMenuProps {
   isSignedIn: boolean;
@@ -177,6 +178,13 @@ export default function MobileMenu({ isSignedIn, user, unreadCount = 0 }: Mobile
               </MobileNavLink>
 
               <div className="pt-4 mt-4" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                <div className="flex items-center justify-between px-3 py-2.5">
+                  <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Theme</span>
+                  <ThemeToggle />
+                </div>
+              </div>
+
+              <div className="pt-2 mt-2" style={{ borderTop: "1px solid var(--border-subtle)" }}>
                 <form action={signOutAction}>
                   <button
                     type="submit"
@@ -196,6 +204,10 @@ export default function MobileMenu({ isSignedIn, user, unreadCount = 0 }: Mobile
               }>
                 Sign In
               </MobileNavLink>
+              <div className="px-3 py-2.5 mt-2 flex items-center justify-between" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+                <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Theme</span>
+                <ThemeToggle />
+              </div>
               <div className="px-3 mt-3">
                 <Link
                   href="/register"

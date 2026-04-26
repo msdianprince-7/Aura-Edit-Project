@@ -5,6 +5,7 @@ import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
 import NotificationBell from "./notifications/NotificationBell";
 import SearchModal from "./search/SearchModal";
+import ThemeToggle from "./ThemeToggle";
 import prisma from "@/lib/prisma";
 
 export default async function Navbar() {
@@ -81,6 +82,8 @@ export default async function Navbar() {
               >
                 Upload
               </Link>
+              {/* Theme toggle */}
+              <ThemeToggle />
               {/* Notification bell */}
               <NotificationBell initialUnreadCount={unreadCount} />
               {/* User avatar dropdown */}
@@ -90,6 +93,7 @@ export default async function Navbar() {
             </>
           ) : (
             <>
+              <ThemeToggle />
               <Link
                 href="/login"
                 className="text-sm font-medium transition-colors px-4 py-2 rounded-full hover:opacity-100 opacity-70"
