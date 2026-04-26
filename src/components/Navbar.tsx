@@ -61,6 +61,13 @@ export default async function Navbar() {
             <>
               {/* Quick nav links */}
               <Link
+                href="/feed"
+                className="text-sm font-medium px-4 py-2 rounded-full transition-all duration-200 hover:opacity-100 opacity-70"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Feed
+              </Link>
+              <Link
                 href="/dashboard"
                 className="text-sm font-medium px-4 py-2 rounded-full transition-all duration-200 hover:opacity-100 opacity-70"
                 style={{ color: "var(--text-primary)" }}

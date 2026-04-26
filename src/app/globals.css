@@ -1159,3 +1159,129 @@ body {
   color: var(--text-secondary);
 }
 
+/* ═══════════════════════════════════════════
+   PERSONALIZED FEED
+   ═══════════════════════════════════════════ */
+
+.feed-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .feed-container {
+    padding: 0;
+  }
+}
+
+/* Feed cards list */
+.feed-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .feed-cards-list {
+    gap: 2rem;
+  }
+}
+
+/* Feed card */
+.feed-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feed-card:hover {
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(184, 140, 245, 0.04);
+}
+
+/* Avatar gradient ring */
+.feed-avatar-ring {
+  padding: 2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-rose), var(--accent-lavender), var(--accent-amber));
+  flex-shrink: 0;
+}
+
+/* Photo container */
+.feed-photo-container {
+  overflow: hidden;
+}
+
+.feed-photo-container img {
+  transition: transform 0.5s ease;
+}
+
+.feed-card:hover .feed-photo-container img {
+  transform: scale(1.015);
+}
+
+/* Feed header */
+.feed-header {
+  position: relative;
+}
+
+.feed-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1rem;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-subtle) 20%,
+    var(--border-hover) 50%,
+    var(--border-subtle) 80%,
+    transparent
+  );
+}
+
+/* Infinite scroll loading shimmer */
+@keyframes feed-loading-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.feed-loading-indicator {
+  animation: feed-loading-pulse 1.5s ease-in-out infinite;
+}
+
+/* End of feed fade */
+@keyframes feed-complete-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feed-cards-list + .text-center {
+  animation: feed-complete-reveal 0.5s ease forwards;
+}
+
+/* Feed card caption link hover */
+.feed-card a[href^="/"]:hover {
+  text-decoration-color: var(--accent-lavender);
+}
+
+/* ═══════════════════════════════════════════
+   COLLECTION TRIGGER BUTTON (CSS-only hover)
+   ═══════════════════════════════════════════ */
+
+.collection-trigger-btn:hover {
+  background: var(--bg-elevated) !important;
+  color: var(--accent-lavender) !important;
+}

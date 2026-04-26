@@ -380,23 +380,14 @@ export default async function Dashboard() {
                       photoId={photo.id}
                       trigger={
                         <button
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                          className="collection-trigger-btn w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
                           style={{
                             background: "rgba(13, 10, 18, 0.6)",
                             backdropFilter: "blur(4px)",
                             border: "1px solid var(--border-subtle)",
                             color: "var(--text-primary)",
                           }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "var(--bg-elevated)";
-                            e.currentTarget.style.color = "var(--accent-lavender)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "rgba(13, 10, 18, 0.6)";
-                            e.currentTarget.style.color = "var(--text-primary)";
-                          }}
                           title="Add to Collection"
-                          onClick={(e) => e.preventDefault()}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19" />
